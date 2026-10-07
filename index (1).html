@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not Real Bank – Automated Credit Approval Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f2a43;--bg:#f4f7f9;--card:#fff;--line:#d5dee6;--muted:#556a7d;--teal:#0e7c86;--amber:#a15c00;--amberbg:#fff1d9;--red:#b3261e;--redbg:#fde8e6;--ok:#0b7a4b;--okbg:#e0f4ea;--serif:'Fraunces',Georgia,serif;--sans:'Source Sans 3',system-ui,-apple-system,'Segoe UI',sans-serif}
+:root[data-theme=dark]{--ink:#e8f0f6;--bg:#0c1822;--card:#132635;--line:#27404f;--muted:#9bb0c0;--amber:#f0b45a;--amberbg:#3a2c12;--red:#ff8a80;--redbg:#3d1c1a;--ok:#5fd9a1;--okbg:#10372a;--teal:#4cc2cc}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;font:17px/1.55 var(--sans);background:var(--bg);color:var(--ink)}
+h1,h2,h3{font-family:var(--serif);line-height:1.15;margin:0 0 .5em}
+h1{font-size:clamp(2.2rem,6vw,3.6rem)}h2{font-size:1.9rem}h3{font-size:1.15rem}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+.demo{background:#0f2a43;color:#fff;text-align:center;font-size:.9rem;padding:8px 16px}
+header{background:var(--card);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+.logo{font-family:var(--serif);font-weight:700;font-size:1.25rem}
+nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap}nav a{text-decoration:none;color:var(--ink);font-weight:600}
+button,.btn{font:inherit;font-weight:600;border:0;border-radius:8px;padding:12px 22px;background:var(--teal);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+:root[data-theme=dark] button,:root[data-theme=dark] .btn{color:#06222a}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);padding:6px 12px}
+.hero{padding:72px 20px 56px}
+.hero p{max-width:34em;font-size:1.2rem;color:var(--muted);margin:0 0 26px}
+section{padding:44px 0}
+.steps{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+.steps .card p,.three .card p{margin:0;color:var(--muted)}
+.three{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.lead{color:var(--muted);max-width:42em;margin:-.2em 0 20px}
+form .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+label{display:block;font-weight:600;margin-bottom:4px}
+input,select{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input[aria-invalid=true]{border-color:var(--red)}
+.hint{font-size:.85rem;color:var(--muted);margin-top:2px}
+.err{color:var(--red);font-size:.9rem;min-height:1.2em}
+.btn-row{margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.fair{color:var(--muted);font-size:.9rem;margin:14px 0 0}
+#result{display:none;margin-top:20px}
+.res{display:grid;gap:24px;grid-template-columns:minmax(0,320px) 1fr;align-items:center}
+@media(max-width:760px){.res{grid-template-columns:1fr}}
+.chart svg{width:100%;display:block}
+.chart .t{font-size:9px;fill:var(--muted)}
+.chart .curve{fill:none;stroke:var(--ink);stroke-width:2}
+.chart .dot{transition:cx .6s ease,cy .6s ease,fill .3s;stroke:var(--card);stroke-width:2.5}
+.chart figcaption{font-size:.85rem;color:var(--muted);margin-top:4px}
+.chart{margin:0}
+.badge{display:inline-block;padding:4px 14px;border-radius:99px;font-weight:600;margin-bottom:10px}
+.s-approved{background:var(--okbg);color:var(--ok)}.s-review{background:var(--amberbg);color:var(--amber)}.s-rejected{background:var(--redbg);color:var(--red)}
+.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin:14px 0}
+.stats div{background:var(--bg);border-radius:8px;padding:10px 12px}
+.stats b{display:block;font-size:1.25rem}.stats span{color:var(--muted);font-size:.85rem}
+.reasons{margin:6px 0 0;padding-left:20px}
+.whatif{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.whatif .row{display:grid;gap:6px 20px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+input[type=range]{padding:0;accent-color:var(--teal)}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600}
+details p{margin:10px 0 0;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:.9rem}
+[hidden]{display:none!important}
+nav button.nav{background:none;border:0;border-radius:0;padding:6px 0;color:var(--ink);font-weight:600}
+nav button.nav.on{color:var(--teal);box-shadow:0 2px 0 var(--teal)}
+nav button.nav.off{opacity:.65}
+button.logo{padding:0;font-size:1.25rem}
+:root[data-theme=dark] nav button.nav,:root[data-theme=dark] button.ghost,:root[data-theme=dark] .tile{color:var(--ink)}
+.tiles{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tile{text-align:left;background:var(--card);border:2px solid var(--teal);border-radius:12px;padding:18px;color:var(--ink)}
+.tile small{display:block;font-weight:400;color:var(--muted)}
+.promo{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.promo p{margin:0;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2a43;color:#fff;padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.stepper{list-style:none;display:flex;gap:6px;padding:0;margin:0 0 18px;flex-wrap:wrap}
+.stepper li{flex:1;min-width:100px;border-top:4px solid var(--line);padding-top:6px;font-size:.85rem;color:var(--muted)}
+.stepper li.done{border-color:var(--teal)}
+.stepper li.cur{border-color:var(--teal);color:var(--ink);font-weight:600}
+.rev{border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:12px}
+.rev .top{display:flex;justify-content:space-between;align-items:center}
+.rev dl{display:grid;grid-template-columns:minmax(120px,40%) 1fr;gap:4px 12px;margin:8px 0 0}
+.rev dt{color:var(--muted)}.rev dd{margin:0;overflow-wrap:anywhere}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+.chk input{width:auto;margin-top:6px}
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="wrap">
+    <button class="nav logo" data-go="home" type="button">Not Real Bank</button>
+    <nav aria-label="Main">
+      <button class="nav" data-go="home" type="button">Home</button>
+      <button class="nav off" data-off="Accounts" type="button">Accounts</button>
+      <button class="nav off" data-off="Cards" type="button">Cards</button>
+      <button class="nav" data-go="loan" type="button">Loans &amp; Credit</button>
+      <button class="nav off" data-off="Investments" type="button">Invest</button>
+      <button class="nav off" data-off="Insurance" type="button">Insurance</button>
+      <button class="ghost" id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div id="view-home">
+<div class="wrap hero">
+  <h1>Banking that keeps up with you.</h1>
+  <p>Manage your money, borrow when you need to, and get a lending decision in minutes.</p>
+  <button class="btn" data-go="loan" type="button">Check loan eligibility</button>
+</div>
+<section><div class="wrap">
+  <h2>What would you like to do?</h2>
+  <div class="tiles">
+    <button class="tile" data-off="Accounts" type="button"><b>Accounts</b><small>Savings and checking</small></button>
+    <button class="tile" data-off="Transfers" type="button"><b>Transfers</b><small>Send and pay</small></button>
+    <button class="tile" data-off="Cards" type="button"><b>Cards</b><small>Debit and credit</small></button>
+    <button class="tile live" data-go="loan" type="button"><b>Loans &amp; Credit</b><small>Apply and get a decision</small></button>
+    <button class="tile" data-off="Investments" type="button"><b>Investments</b><small>Grow your savings</small></button>
+    <button class="tile" data-off="Insurance" type="button"><b>Insurance</b><small>Protect what matters</small></button>
+  </div>
+</div></section>
+<section><div class="wrap"><div class="card promo">
+  <div><h3>Personal loan, decided in minutes</h3><p>Straightforward applications get an instant answer. Anything borderline goes to a person.</p></div>
+  <button class="btn" data-go="loan" type="button">Apply now</button>
+</div></div></section>
+<section><div class="wrap">
+  <h2>Latest from Not Real </h2>
+  <div class="three">
+    <div class="card"><h3>Higher savings rates</h3><p>Earn more on balances you don’t need right away.</p></div>
+    <div class="card"><h3>Spot a scam call</h3><p>Four signs that a message claiming to be your bank isn’t.</p></div>
+    <div class="card"><h3>Our mobile app</h3><p>Check balances and pay bills from your phone.</p></div>
+  </div>
+</div></section>
+</div>
+
+<div id="view-loan" hidden>
+<div class="wrap hero">
+  <h1>Faster decisions, fairly made.</h1>
+  <p>See how an automated credit model turns a loan application into an approve, review or reject decision in seconds, with clear reasons and a human for the borderline cases.</p>
+  <button class="btn" data-scroll="apply" type="button">Start your application</button>
+</div>
+
+
+
+<section id="apply"><div class="wrap">
+  <h2>Loan application</h2>
+  <div class="card" id="formcard">
+    <p class="fair" style="margin-top:0">Please use made-up details. Name, address and employer are only for identity checks. The model scores income, debts, credit use, missed payments and the loan itself.</p>
+    <ol class="stepper" id="stepper" aria-label="Application progress"></ol>
+    <form id="form" novalidate>
+      <h3 id="step-title"></h3>
+      <div id="steps"></div>
+      <div class="btn-row"><button type="button" class="ghost" id="back">Back</button><button type="submit" id="next">Continue</button><button type="button" class="ghost" id="sample">Fill sample data</button></div>
+    </form>
+  </div>
+
+  <div class="card" id="result" tabindex="-1" aria-live="polite">
+    <p class="fair" id="refline" style="margin:0 0 14px"></p>
+    <div class="res">
+      <figure class="chart">
+        <svg viewBox="0 0 320 190" role="img" aria-label="Sigmoid curve showing your probability of default against the 10% and 30% decision thresholds">
+          <rect x="34" y="10" width="276" height="105" fill="var(--red)" opacity=".16"/>
+          <rect x="34" y="115" width="276" height="30" fill="var(--amber)" opacity=".22"/>
+          <rect x="34" y="145" width="276" height="15" fill="var(--ok)" opacity=".22"/>
+          <text class="t" x="30" y="14" text-anchor="end">100%</text>
+          <text class="t" x="30" y="118" text-anchor="end">30%</text>
+          <text class="t" x="30" y="148" text-anchor="end">10%</text>
+          <text class="t" x="30" y="163" text-anchor="end">0%</text>
+          <text class="t" x="40" y="60">Auto-reject</text>
+          <text class="t" x="40" y="133">Human review</text>
+          <text class="t" x="40" y="156">Auto-approve</text>
+          <path id="curve" class="curve" d=""/>
+          <circle id="dot" class="dot" r="6" cx="34" cy="160"/>
+          <text class="t" x="172" y="178" text-anchor="middle">Lower risk  ←  model score  →  higher risk</text>
+        </svg>
+        <figcaption>The dot is your application on the model’s S-shaped curve.</figcaption>
+      </figure>
+      <div>
+        <span class="badge" id="badge"></span>
+        <h3 id="headline"></h3>
+        <div class="stats">
+          <div><b id="r-p"></b><span>Probability of default</span></div>
+          <div><b id="r-dti"></b><span>Debt-to-income</span></div>
+          <div><b id="r-pmt"></b><span>Est. monthly payment</span></div>
+        </div>
+        <strong>What drove this decision</strong>
+        <ul class="reasons" id="reasons"></ul>
+      </div>
+    </div>
+    <div class="whatif">
+      <h3>What if you borrowed a different amount?</h3>
+      <div class="row">
+        <div><label for="w-amount">Amount: <span id="w-amount-v"></span></label><input type="range" id="w-amount" min="1000" max="100000" step="500"></div>
+        <div><label for="w-tenure">Tenure: <span id="w-tenure-v"></span> months</label><input type="range" id="w-tenure" min="12" max="60" step="12"></div>
+      </div>
+      <div class="btn-row"><button type="button" class="ghost" id="restart">Start a new application</button></div>
+    </div>
+  </div>
+</div></section>
+
+
+
+<section id="faq"><div class="wrap">
+  <h2>Frequently asked questions</h2>
+  <details><summary>Is this a real loan application?</summary><p>No. Not Real Bank is fictional and nothing here is processed or stored.</p></details>
+  <details><summary>How does the model work?</summary><p>It is a hand-tuned logistic regression: it adds up weighted signals (debt-to-income, income, credit utilization, missed payments), then a sigmoid function converts the total into a probability between 0% and 100%. The weights here are made up for the demo, not trained on real data.</p></details>
+  <details><summary>What do the 10% and 30% thresholds mean?</summary><p>They are example bank rules. Below 10% probability of default the application is approved, from 10% to 30% it goes to human review, and above 30% it is rejected with reasons. Different banks set different rules.</p></details>
+  <details><summary>How is the monthly payment estimated?</summary><p>With a fixed 8% APR over the tenure you choose. Debt-to-income includes this new payment.</p></details>
+</div></section>
+</div>
+</main>
+
+<footer><div class="wrap">© Not Real Bank (fictional). For demonstration and portfolio use only. Not financial advice.</div></footer>
+
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const pct = x => Math.round(x * 100) + '%';
+const pmt = (P, apr, n) => { const r = apr / 1200; return P * r / (1 - Math.pow(1 + r, -n)); };
+const sigmoid = z => 1 / (1 + Math.exp(-z));
+
+// ---- Demo logistic regression (weights are illustrative, not trained) ----
+const W = { b0: -4.0, dti: 5.0, util: 1.8, missed: 0.6, inc: -0.35 };
+const REF = { dti: 0.2, util: 0.3, inc: 5000 };   // a "typical good" applicant, used to explain drivers
+const APPROVE_BELOW = 0.10, REJECT_ABOVE = 0.30;   // bank rules from the use case
+
+function evaluate(d) {
+  const payment = pmt(d.amount, 8, d.tenure);
+  const dti = (d.debt + payment) / d.income;
+  const lnInc = Math.log(d.income / 1000);
+  const z = W.b0 + W.dti * dti + W.util * d.util + W.missed * d.missed + W.inc * lnInc;
+  const p = sigmoid(z);
+  // How much each signal pushes risk up (+) or down (-) versus the reference applicant
+  const drivers = [
+    { c: W.dti * (dti - REF.dti), t: 'Debt-to-income would be ' + pct(dti) + ' after this loan' },
+    { c: W.util * (d.util - REF.util), t: 'You are using ' + pct(d.util) + ' of your available credit' },
+    { c: W.missed * d.missed, t: d.missed + ' missed payment' + (d.missed === 1 ? '' : 's') + ' in the last 12 months' },
+    { c: W.inc * (lnInc - Math.log(REF.inc / 1000)), t: 'Monthly income of ' + money(d.income) }
+  ];
+  const status = p < APPROVE_BELOW ? 'approved' : p <= REJECT_ABOVE ? 'review' : 'rejected';
+  let list;
+  if (status === 'approved') list = drivers.filter(x => x.c < -0.05).sort((a, b) => a.c - b.c).slice(0, 3);
+  else list = drivers.filter(x => x.c > 0.05).sort((a, b) => b.c - a.c).slice(0, 3);
+  if (!list.length) list = drivers.slice().sort((a, b) => status === 'approved' ? a.c - b.c : b.c - a.c).slice(0, 2);
+  const reasons = list.map(x => x.t + (x.c > 0 ? ' (raises risk)' : ' (lowers risk)'));
+  const headlines = {
+    approved: 'Approved. Your risk is low enough for an instant decision.',
+    review: 'Sent to a human underwriter for a closer look.',
+    rejected: 'We can’t approve this request automatically.'
+  };
+  return { status, p, z, dti, payment, reasons, headline: headlines[status] };
+}
+
+// ---- Rendering ----
+const labels = { approved: 'Approved', review: 'Human review', rejected: 'Rejected' };
+const colors = { approved: 'var(--ok)', review: 'var(--amber)', rejected: 'var(--red)' };
+const X = z => 34 + (z + 6) / 10 * 276, Y = p => 160 - p * 150;
+let current = null;
+
+// Draw the S-shaped curve once
+(function () {
+  let s = '';
+  for (let z = -6; z <= 4.001; z += 0.25) s += (s ? 'L' : 'M') + X(z).toFixed(1) + ' ' + Y(sigmoid(z)).toFixed(1);
+  $('curve').setAttribute('d', s);
+})();
+
+function render() {
+  const r = evaluate(current);
+  $('badge').textContent = labels[r.status];
+  $('badge').className = 'badge s-' + r.status;
+  $('headline').textContent = r.headline;
+  $('r-p').textContent = r.p < 0.001 ? '<0.1%' : r.p > 0.999 ? '>99.9%' : (r.p * 100).toFixed(1) + '%';
+  $('r-dti').textContent = pct(r.dti);
+  $('r-pmt').textContent = money(r.payment);
+  $('dot').setAttribute('cx', X(clamp(r.z, -6, 4)));
+  $('dot').setAttribute('cy', Y(r.p));
+  $('dot').style.fill = colors[r.status];
+  $('reasons').innerHTML = '';
+  r.reasons.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('reasons').appendChild(li); });
+  $('w-amount').value = current.amount; $('w-tenure').value = current.tenure;
+  $('w-amount-v').textContent = money(current.amount); $('w-tenure-v').textContent = current.tenure;
+}
+
+// ---- Multi-step application form ----
+const req = m => v => v.trim() ? '' : m;
+const rng = (a, b, m) => v => (v.trim() !== '' && +v >= a && +v <= b) ? '' : m;
+const optNum = (a, b, m) => v => (v.trim() === '' || (+v >= a && +v <= b)) ? '' : m;
+const ageOk = v => {
+  if (!v) return 'Enter your date of birth.';
+  const t = new Date(), b = new Date(v); let a = t.getFullYear() - b.getFullYear();
+  if (t < new Date(t.getFullYear(), b.getMonth(), b.getDate())) a--;
+  return a >= 18 && a <= 100 ? '' : 'You must be 18 or older to apply.';
+};
+const F = (id, label, type, o = {}) => ({ id, label, type, ...o });
+const SEL = a => [['', 'Select…']].concat(a.map(x => Array.isArray(x) ? x : [x, x]));
+const val = id => $(id).value.trim();
+const isWork = () => ['employed', 'self'].includes(val('emp'));
+const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const STEPS = [
+  { title: 'Loan details', fields: [
+    F('amount', 'Loan amount ($)', 'number', { min: 1000, max: 100000, check: rng(1000, 100000, 'Enter an amount between $1,000 and $100,000.') }),
+    F('tenure', 'Repayment period', 'select', { opts: [['12', '12 months'], ['24', '24 months'], ['36', '36 months'], ['48', '48 months'], ['60', '60 months']], check: () => '' }),
+    F('purpose', 'What is the loan for?', 'select', { opts: SEL(['Debt consolidation', 'Home improvement', 'Education', 'Car purchase', 'Medical expenses', 'Other']), check: req('Choose a purpose.') })
+  ] },
+  { title: 'About you', fields: [
+    F('first', 'First name', 'text', { check: req('Enter your first name.') }),
+    F('last', 'Last name', 'text', { check: req('Enter your last name.') }),
+    F('dob', 'Date of birth', 'date', { check: ageOk }),
+    F('email', 'Email', 'email', { check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '' : 'Enter a valid email, like name@example.com.' }),
+    F('phone', 'Mobile number', 'tel', { check: v => { const n = v.replace(/\D/g, '').length; return n >= 8 && n <= 15 ? '' : 'Enter a number with 8 to 15 digits.'; } }),
+    F('address', 'Street address', 'text', { check: req('Enter your street address.') }),
+    F('city', 'City', 'text', { check: req('Enter your city.') }),
+    F('postal', 'Postal code', 'text', { check: v => v.length >= 3 && v.length <= 10 ? '' : 'Enter your postal code.' })
+  ] },
+  { title: 'Work and income', fields: [
+    F('emp', 'Employment status', 'select', { opts: SEL([['employed', 'Employed'], ['self', 'Self-employed'], ['retired', 'Retired'], ['student', 'Student'], ['unemployed', 'Unemployed']]), check: req('Choose your employment status.') }),
+    F('employer', 'Employer or business name', 'text', { show: isWork, check: req('Enter your employer or business name.') }),
+    F('jobtitle', 'Job title', 'text', { show: isWork, check: req('Enter your job title.') }),
+    F('years', 'Years in current job', 'number', { min: 0, max: 60, show: isWork, check: rng(0, 60, 'Enter a number from 0 to 60.') }),
+    F('income', 'Monthly gross income ($)', 'number', { min: 1, check: v => v.trim() !== '' && +v > 0 ? '' : 'Enter your monthly income. It must be more than 0.' }),
+    F('other', 'Other monthly income ($, optional)', 'number', { min: 0, check: optNum(0, 1e7, 'Enter 0 or more, or leave blank.') })
+  ] },
+  { title: 'Financial commitments', fields: [
+    F('debt', 'Monthly debt payments ($)', 'number', { min: 0, hint: 'Existing loans and credit card payments', check: rng(0, 1e6, 'Enter your monthly debt payments (0 if none).') }),
+    F('util', 'Credit utilization (%)', 'number', { min: 0, max: 100, hint: 'Share of your credit limits currently used', check: rng(0, 100, 'Enter a percentage between 0 and 100.') }),
+    F('missed', 'Missed payments, last 12 months', 'number', { min: 0, max: 12, check: v => /^\d+$/.test(v) && +v <= 12 ? '' : 'Enter a whole number from 0 to 12.' })
+  ] },
+  { title: 'Review and submit' }
+];
+const vis = f => !f.show || f.show();
+
+const fieldHTML = f => {
+  const ctl = f.type === 'select'
+    ? `<select id="${f.id}">${f.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('')}</select>`
+    : `<input type="${f.type}" id="${f.id}" autocomplete="off"${f.min != null ? ` min="${f.min}"` : ''}${f.max != null ? ` max="${f.max}"` : ''}>`;
+  return `<div id="box-${f.id}"><label for="${f.id}">${f.label}</label>${ctl}${f.hint ? `<div class="hint">${f.hint}</div>` : ''}<div class="err" id="e-${f.id}" aria-live="polite"></div></div>`;
+};
+STEPS.forEach((s, i) => {
+  const div = document.createElement('div'); div.id = 'step' + i; div.hidden = true;
+  if (s.fields) div.innerHTML = '<div class="grid">' + s.fields.map(fieldHTML).join('') + '</div>';
+  else div.innerHTML = '<div id="review"></div><label class="chk"><input type="checkbox" id="c1"><span>I confirm the details above are correct.</span></label><div class="err" id="e-c1"></div><label class="chk"><input type="checkbox" id="c2"><span>I agree to an automated credit assessment of this application.</span></label><div class="err" id="e-c2"></div>';
+  $('steps').appendChild(div);
+});
+$('tenure').value = '36';
+
+let step = 0;
+const toggleWork = () => ['employer', 'jobtitle', 'years'].forEach(id => $('box-' + id).hidden = !isWork());
+$('emp').addEventListener('change', toggleWork);
+
+function buildReview() {
+  $('review').innerHTML = STEPS.slice(0, -1).map((s, i) =>
+    `<div class="rev"><div class="top"><strong>${s.title}</strong><button type="button" class="ghost" data-edit="${i}">Edit</button></div><dl>` +
+    s.fields.filter(vis).map(f => { const el = $(f.id); const v = f.type === 'select' ? el.options[el.selectedIndex].text : el.value; return `<dt>${f.label}</dt><dd>${esc(v) || '–'}</dd>`; }).join('') + '</dl></div>').join('');
+}
+$('review').addEventListener('click', e => { const b = e.target.closest('[data-edit]'); if (b) showStep(+b.dataset.edit); });
+
+function showStep(n) {
+  step = n;
+  STEPS.forEach((s, i) => $('step' + i).hidden = i !== n);
+  $('step-title').textContent = 'Step ' + (n + 1) + ' of ' + STEPS.length + ': ' + STEPS[n].title;
+  $('stepper').innerHTML = STEPS.map((s, i) => `<li class="${i < n ? 'done' : i === n ? 'cur' : ''}"${i === n ? ' aria-current="step"' : ''}>${i + 1}. ${s.title.split(' and ')[0]}</li>`).join('');
+  $('back').hidden = n === 0;
+  $('next').textContent = n === STEPS.length - 1 ? 'Submit application' : 'Continue';
+  toggleWork();
+  if (n === STEPS.length - 1) buildReview();
+}
+
+function validateStep(n) {
+  let first = null;
+  if (STEPS[n].fields) STEPS[n].fields.forEach(f => {
+    const msg = vis(f) ? f.check($(f.id).value) : '';
+    $('e-' + f.id).textContent = msg; $(f.id).setAttribute('aria-invalid', msg ? 'true' : 'false');
+    if (msg && !first) first = f.id;
+  });
+  else ['c1', 'c2'].forEach(c => {
+    const m = $(c).checked ? '' : 'Tick this box to submit.';
+    $('e-' + c).textContent = m; if (m && !first) first = c;
+  });
+  if (first) $(first).focus();
+  return !first;
+}
+
+$('back').addEventListener('click', () => showStep(step - 1));
+$('form').addEventListener('submit', ev => {
+  ev.preventDefault();
+  if (!validateStep(step)) return;
+  if (step < STEPS.length - 1) { showStep(step + 1); $('formcard').scrollIntoView({ behavior: 'smooth' }); return; }
+  // Only these signals go to the model; personal details are never scored
+  current = { income: +val('income') + (+val('other') || 0), debt: +val('debt'), util: +val('util') / 100, missed: +val('missed'), amount: +val('amount'), tenure: +val('tenure') };
+  $('refline').textContent = 'Application MTB-' + Math.floor(100000 + Math.random() * 900000) + ' received for ' + val('first') + ' ' + val('last') + '.';
+  $('formcard').hidden = true;
+  $('result').style.display = 'block';
+  render();
+  $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('result').focus({ preventScroll: true });
+});
+
+$('restart').addEventListener('click', () => {
+  $('form').reset(); $('tenure').value = '36';
+  STEPS.forEach(s => s.fields && s.fields.forEach(f => { $('e-' + f.id).textContent = ''; $(f.id).setAttribute('aria-invalid', 'false'); }));
+  $('result').style.display = 'none'; $('formcard').hidden = false;
+  showStep(0); $('apply').scrollIntoView({ behavior: 'smooth' });
+});
+
+// What-if sliders re-run the decision live
+$('w-amount').addEventListener('input', e => { current.amount = +e.target.value; $('amount').value = current.amount; render(); });
+$('w-tenure').addEventListener('input', e => { current.tenure = +e.target.value; $('tenure').value = current.tenure; render(); });
+
+const SAMPLE = { amount: 20000, tenure: '36', purpose: 'Home improvement', first: 'Alex', last: 'Tan', dob: '1991-05-14', email: 'alex@example.com', phone: '5550100123', address: '12 Sample Street', city: 'Sample City', postal: '000000', emp: 'employed', employer: 'Example Co', jobtitle: 'Analyst', years: 4, income: 5500, other: 0, debt: 600, util: 30, missed: 0 };
+$('sample').addEventListener('click', () => { Object.keys(SAMPLE).forEach(k => $(k).value = SAMPLE[k]); toggleWork(); });
+showStep(0);
+
+// Light / dark toggle (no storage: resets on reload)
+const root = document.documentElement;
+if (matchMedia('(prefers-color-scheme: dark)').matches) root.dataset.theme = 'dark';
+const syncTheme = () => $('theme').textContent = root.dataset.theme === 'dark' ? 'Light mode' : 'Dark mode';
+$('theme').addEventListener('click', () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; syncTheme(); });
+syncTheme();
+
+// ---- Page switching: only Home and Loans & Credit work ----
+const views = { home: $('view-home'), loan: $('view-loan') };
+function go(v, push) {
+  Object.keys(views).forEach(k => views[k].hidden = k !== v);
+  document.querySelectorAll('nav button[data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === v));
+  window.scrollTo(0, 0);
+  if (push !== false) history.pushState(null, '', '#' + v);
+}
+let toastTimer;
+function toast(msg) {
+  $('toast').textContent = msg; $('toast').classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2600);
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'), o = e.target.closest('[data-off]'), sc = e.target.closest('[data-scroll]');
+  if (g) go(g.dataset.go);
+  else if (o) toast(o.dataset.off + ' features is not available yet. Coming soon.');
+  else if (sc) $(sc.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
+});
+addEventListener('popstate', () => go(location.hash === '#loan' ? 'loan' : 'home', false));
+go(location.hash === '#loan' ? 'loan' : 'home', false);
+</script>
+</body>
+</html>
